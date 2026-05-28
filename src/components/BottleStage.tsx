@@ -15,8 +15,11 @@ const STATES = [
   { id: '#advantages', x:  0.0, scale: 0.85, rotZ:  0      }, // centre
   { id: '#features',   x:  1.8, scale: 0.65, rotZ: -0.383  }, // right 42%, -22deg
   { id: '#product',    x:  1.5, scale: 0.75, rotZ:  0      }, // right half
-  { id: '#about',      x:  0.0, scale: 0.25, rotZ:  0      }, // small, centred
-  { id: '#footer',     x:  0.0, scale: 0.00, rotZ:  0      }, // hidden
+  { id: '#about',        x:  0.0, scale: 0.25, rotZ:  0    }, // small, centred
+  { id: '#story',        x:  1.2, scale: 0.22, rotZ:  0.10 }, // small, right
+  { id: '#testimonials', x:  0.0, scale: 0.00, rotZ:  0    }, // hidden (cream bg)
+  { id: '#tribe',        x: -1.0, scale: 0.18, rotZ: -0.10 }, // small, left
+  { id: '#footer',       x:  0.0, scale: 0.00, rotZ:  0    }, // hidden
 ]
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -163,5 +166,5 @@ export default function BottleStage() {
     }
   }, [])
 
-  return <div ref={mountRef} className="fixed inset-0 pointer-events-none z-40" aria-hidden="true" />
+  return <div ref={mountRef} className="fixed inset-0 pointer-events-none z-40 hidden md:block" aria-hidden="true" />
 }

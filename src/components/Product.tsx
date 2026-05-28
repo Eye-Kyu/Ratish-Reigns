@@ -4,20 +4,13 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import bottleTexture from '../assets/images/bottle.jpg'
 import { productBridge } from '../productBridge'
+import { PRODUCTS } from '../products'
+import { useCart } from '../CartContext'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const SPACING = 7
-const N = 6
-
-const PRODUCTS = [
-  { name: 'RATISH ORIGINAL', tagline: 'THE ONE THAT STARTED IT ALL.',  size: '1 Litre',  vessel: 'Glass Bottle',  price: 'KES 450', accent: '#fffdc7' },
-  { name: 'RATISH LITE',     tagline: 'LIGHT BODY. HEAVY FLAVOUR.',    size: '500ml',    vessel: 'Glass Bottle',  price: 'KES 250', accent: '#a8e6cf' },
-  { name: 'RATISH CLASSIC',  tagline: 'SMOOTH. RICH. TIMELESS.',       size: '750ml',    vessel: 'Glass Bottle',  price: 'KES 350', accent: '#ffd3a5' },
-  { name: 'RATISH SPICED',   tagline: 'BOLD SPICE FOR BOLD SOULS.',    size: '1 Litre',  vessel: 'Ceramic Jug',   price: 'KES 600', accent: '#ffb3c6' },
-  { name: 'RATISH GOLD',     tagline: 'AGED LONGER. TASTES BETTER.',   size: '1 Litre',  vessel: 'Premium Glass', price: 'KES 850', accent: '#ffd700' },
-  { name: 'RATISH RESERVE',  tagline: 'FOR THE ONES WHO KNOW.',        size: '2 Litres', vessel: 'Glass Bottle',  price: 'KES 900', accent: '#c3b1e1' },
-]
+const N = PRODUCTS.length
 
 const SLIDE_BG     = ['#254d32', '#1e3d28', '#2a5538', '#2d2820', '#1e2d1e', '#1a1f2e']
 const GLASS_COLORS = [0x3d7a50,  0x2d6a5a,  0x4a6a3d,  0x7a3d3d,  0x7a6a3d,  0x3d4d7a]
@@ -34,8 +27,19 @@ export default function Product() {
   const trackRef   = useRef<HTMLDivElement>(null)
   const mountRef   = useRef<HTMLDivElement>(null)
   const [activeSlide, setActiveSlide] = useState(0)
+  const [addedSlide, setAddedSlide]   = useState<number | null>(null)
+  const { addToCart } = useCart()
+
+  const handleBuy = (i: number) => {
+    addToCart(PRODUCTS[i])
+    setAddedSlide(i)
+    setTimeout(() => setAddedSlide(null), 1500)
+  }
 
   useEffect(() => {
+    // Skip Three.js + GSAP pin on mobile — mobile shows a static list instead
+    if (window.innerWidth < 768) return
+
     const section = sectionRef.current!
     const track   = trackRef.current!
     const mount   = mountRef.current!
@@ -197,12 +201,60 @@ export default function Product() {
     }
   }, [])
 
+  const SLIDE_BG_LOCAL = ['#254d32', '#1e3d28', '#2a5538', '#2d2820', '#1e2d1e', '#1a1f2e']
+
   return (
-    <section
-      ref={sectionRef}
-      id="product"
-      className="relative h-screen w-full overflow-hidden"
-    >
+    <>
+      {/* ── Mobile product list (no Three.js, no horizontal scroll) ────────── */}
+      <section className="md:hidden w-full bg-[#254d32] py-14 px-5">
+        <h2
+          className="font-bagel text-white m-0 mb-8"
+          style={{ fontSize: 'clamp(32px, 7vw, 52px)', lineHeight: '1.0' }}
+        >
+          GRAB YOUR BOTTLE!!
+        </h2>
+        <div className="flex flex-col gap-4">
+          {PRODUCTS.map((p, i) => (
+            <div
+              key={p.name}
+              className="rounded-[20px] p-5 flex justify-between items-center gap-4"
+              style={{ background: SLIDE_BG_LOCAL[i] }}
+            >
+              <div className="flex flex-col gap-1 min-w-0">
+                <p className="font-modak m-0 truncate" style={{ fontSize: '13px', color: p.accent }}>
+                  RATISH REIGNS
+                </p>
+                <h3 className="font-bagel text-white not-italic m-0" style={{ fontSize: 'clamp(18px, 5vw, 26px)', lineHeight: '1.1' }}>
+                  {p.name}
+                </h3>
+                <p className="font-inter text-white/50 text-xs m-0">{p.size} · {p.vessel}</p>
+              </div>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <span className="font-bagel not-italic" style={{ fontSize: '20px', color: p.accent }}>
+                  {p.price}
+                </span>
+                <button
+                  onClick={() => handleBuy(i)}
+                  className="rounded-full px-4 py-1.5 font-inter font-medium text-sm border-0 cursor-pointer transition-all"
+                  style={{
+                    background: addedSlide === i ? '#2a7a3a' : p.accent,
+                    color: addedSlide === i ? '#fff' : '#1a2d1a',
+                  }}
+                >
+                  {addedSlide === i ? 'ADDED ✓' : 'Add'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Desktop: pinned horizontal carousel with Three.js ──────────────── */}
+      <section
+        ref={sectionRef}
+        id="product"
+        className="hidden md:block relative h-screen w-full overflow-hidden"
+      >
       {/* Single Three.js canvas — all 6 bottles render here */}
       <div ref={mountRef} className="absolute inset-0 z-[1] pointer-events-none" aria-hidden />
 
@@ -252,10 +304,16 @@ export default function Product() {
                   {p.price}
                 </span>
                 <button
-                  className="font-inter font-medium rounded-full px-6 py-2 cursor-pointer border-0 transition-opacity hover:opacity-80"
-                  style={{ fontSize: '14px', background: p.accent, color: '#1a2d1a', letterSpacing: '0.04em' }}
+                  onClick={() => handleBuy(i)}
+                  className="font-inter font-medium rounded-full px-6 py-2 cursor-pointer border-0 transition-all hover:opacity-80"
+                  style={{
+                    fontSize: '14px',
+                    background: addedSlide === i ? '#2a7a3a' : p.accent,
+                    color: addedSlide === i ? '#fff' : '#1a2d1a',
+                    letterSpacing: '0.04em',
+                  }}
                 >
-                  BUY NOW
+                  {addedSlide === i ? 'ADDED ✓' : 'BUY NOW'}
                 </button>
               </div>
             </div>
@@ -300,5 +358,6 @@ export default function Product() {
         SCROLL TO EXPLORE
       </div>
     </section>
+    </>
   )
 }

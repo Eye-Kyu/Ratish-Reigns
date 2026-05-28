@@ -24,13 +24,10 @@ const WAVES = [
 
 export default function Hero() {
   return (
-    <section id="hero" className="h-screen w-full flex items-center overflow-hidden bg-[#254d32]">
+    <section id="hero" className="min-h-screen w-full flex flex-col md:flex-row items-center overflow-hidden bg-[#254d32]">
 
-      {/* Left half — wavy SVG lines surround where the 3D bottle floats.
-          The container is position:relative with NO z-index, so it does NOT
-          create a new stacking context. Each line's z-index is therefore
-          compared directly against the root-level BottleStage (z-40). */}
-      <div className="relative w-1/2 h-full">
+      {/* Left half — wavy SVG lines (hidden on mobile, bottle not shown) */}
+      <div className="relative w-full md:w-1/2 h-48 md:h-full">
         {WAVES.map(({ path, top, zClass }, i) => (
           <svg
             key={i}
@@ -46,7 +43,7 @@ export default function Hero() {
       </div>
 
       {/* Right half — tagline */}
-      <div className="w-1/2 flex items-center pr-12">
+      <div className="w-full md:w-1/2 flex items-center px-8 md:pr-12 md:pl-0 pb-16 md:pb-0">
         <h1
           className="font-bagel text-[#e2e2e2] not-italic uppercase m-0"
           style={{ fontSize: 'clamp(28px, 3.75vw, 54px)', lineHeight: 1.01, letterSpacing: '0.06em' }}
