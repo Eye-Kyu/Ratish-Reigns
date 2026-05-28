@@ -66,7 +66,7 @@ export default function Tribe() {
                 style={{
                   fontSize: 'clamp(60px, 10vw, 140px)',
                   lineHeight: '1.0',
-                  paddingLeft: `${i * 1.8}em`,
+                  paddingLeft: `${i * 3}vw`,
                   color: i === 2 ? '#d4548a' : 'white',
                 }}
               >

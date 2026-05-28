@@ -7,19 +7,34 @@ import { productBridge } from '../productBridge'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// ── Section states ────────────────────────────────────────────────────────────
+// ── Section states — desktop ──────────────────────────────────────────────────
 // Calibrated to the flex-layout section positions (left-half / centre / right)
 // at a typical 1440–1920 px desktop. x: world units (left ≈ -3.5, right ≈ +3.5)
 const STATES = [
-  { id: '#hero',       x: -1.5, scale: 1.00, rotZ:  0      }, // left half
-  { id: '#advantages', x:  0.0, scale: 0.85, rotZ:  0      }, // centre
-  { id: '#features',   x:  1.8, scale: 0.65, rotZ: -0.383  }, // right 42%, -22deg
-  { id: '#product',    x:  1.5, scale: 0.75, rotZ:  0      }, // right half
-  { id: '#about',        x:  0.0, scale: 0.25, rotZ:  0    }, // small, centred
-  { id: '#story',        x:  1.2, scale: 0.22, rotZ:  0.10 }, // small, right
-  { id: '#testimonials', x:  0.0, scale: 0.00, rotZ:  0    }, // hidden (cream bg)
-  { id: '#tribe',        x: -1.0, scale: 0.18, rotZ: -0.10 }, // small, left
-  { id: '#footer',       x:  0.0, scale: 0.00, rotZ:  0    }, // hidden
+  { id: '#hero',         x: -1.5, scale: 1.00, rotZ:  0      }, // left half
+  { id: '#advantages',   x:  0.0, scale: 0.85, rotZ:  0      }, // centre
+  { id: '#features',     x:  1.8, scale: 0.65, rotZ: -0.383  }, // right 42%, -22deg
+  { id: '#product',      x:  1.5, scale: 0.75, rotZ:  0      }, // right half
+  { id: '#about',        x:  0.0, scale: 0.25, rotZ:  0      }, // small, centred
+  { id: '#story',        x:  1.2, scale: 0.22, rotZ:  0.10   }, // small, right
+  { id: '#testimonials', x:  0.0, scale: 0.00, rotZ:  0      }, // hidden (cream bg)
+  { id: '#tribe',        x: -1.0, scale: 0.18, rotZ: -0.10   }, // small, left
+  { id: '#footer',       x:  0.0, scale: 0.00, rotZ:  0      }, // hidden
+]
+
+// ── Section states — mobile ───────────────────────────────────────────────────
+// All centred (x: 0) at smaller scales so the bottle floats in the middle of
+// each stacked section without overlapping text content.
+const MOBILE_STATES = [
+  { id: '#hero',         x:  0.0, scale: 0.70, rotZ:  0 },
+  { id: '#advantages',   x:  0.0, scale: 0.60, rotZ:  0 },
+  { id: '#features',     x:  0.0, scale: 0.45, rotZ:  0 },
+  { id: '#product',      x:  0.0, scale: 0.00, rotZ:  0 }, // Product has its own canvas
+  { id: '#about',        x:  0.0, scale: 0.20, rotZ:  0 },
+  { id: '#story',        x:  0.0, scale: 0.16, rotZ:  0 },
+  { id: '#testimonials', x:  0.0, scale: 0.00, rotZ:  0 },
+  { id: '#tribe',        x:  0.0, scale: 0.13, rotZ:  0 },
+  { id: '#footer',       x:  0.0, scale: 0.00, rotZ:  0 },
 ]
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -29,6 +44,8 @@ export default function BottleStage() {
 
   useEffect(() => {
     const mount = mountRef.current!
+    const isMobile = window.innerWidth < 768
+    const ACTIVE_STATES = isMobile ? MOBILE_STATES : STATES
 
     // ── Renderer ──────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -60,9 +77,9 @@ export default function BottleStage() {
     scene.add(posGroup)
 
     // initialise to hero state so the bottle is correct on first paint
-    posGroup.position.x = STATES[0].x
-    posGroup.scale.setScalar(STATES[0].scale)
-    rotGroup.rotation.z = STATES[0].rotZ
+    posGroup.position.x = ACTIVE_STATES[0].x
+    posGroup.scale.setScalar(ACTIVE_STATES[0].scale)
+    rotGroup.rotation.z = ACTIVE_STATES[0].rotZ
 
     // ── Bottle geometry ───────────────────────────────────────────────────────
     const profile = [
@@ -123,8 +140,8 @@ export default function BottleStage() {
     // Each trigger covers the scroll distance from when the next section enters
     // the bottom of the viewport until it reaches the top — one full screen of travel.
     // `scrub: 0.6` adds a 0.6 s lag so the bottle glides rather than snaps.
-    const transitionTriggers = STATES.slice(1).map((to, i) => {
-      const from = STATES[i]  // previous section state
+    const transitionTriggers = ACTIVE_STATES.slice(1).map((to, i) => {
+      const from = ACTIVE_STATES[i]  // previous section state
       return ScrollTrigger.create({
         trigger: to.id,
         start:   'top bottom',  // to-section enters viewport bottom
@@ -166,5 +183,5 @@ export default function BottleStage() {
     }
   }, [])
 
-  return <div ref={mountRef} className="fixed inset-0 pointer-events-none z-40 hidden md:block" aria-hidden="true" />
+  return <div ref={mountRef} className="fixed inset-0 pointer-events-none z-40" aria-hidden="true" />
 }
